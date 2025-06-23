@@ -1,0 +1,23 @@
+# Ramadan Tracker Desktop Migration Checklist
+
+- [ ] Project initialized for desktop (Windows, macOS, Linux)
+- [ ] Primary/secondary/background/card/text/accent colors set
+- [ ] Amiri font and modern typography
+- [ ] Side navigation (desktop-friendly)
+- [ ] Responsive layouts
+- [ ] Rounded corners, gradients, Islamic patterns/icons
+- [ ] Example cards, dialogs, and buttons
+- [ ] Home/dashboard screen UI
+- [ ] Prayer Times UI
+- [ ] Hijri Calendar UI
+- [ ] Quran Reader UI
+- [ ] Hadith Collection UI
+- [ ] Zakat Calculator UI
+- [ ] Task & Checklist UI
+- [ ] Video & Recipe Content UI
+- [ ] Qibla Finder UI
+- [ ] Settings & About UI
+- [ ] Accessibility checks
+- [ ] Animations and shimmer effects
+- [ ] Keyboard shortcuts, window resizing
+- [ ] README with setup instructions 

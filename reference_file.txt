@@ -1,0 +1,94 @@
+# Ramadan Tracker App Reference
+
+This file summarizes the main features, architecture, and UI/UX patterns of the Ramadan Tracker mobile app, to guide the creation of a modern desktop Flutter version.
+
+---
+
+## 1. Main Features
+- **Prayer Times**: Calculation, display, and notifications for daily prayers. Location-based, supports different calculation methods and madhabs.
+- **Hijri Calendar**: Islamic calendar with important dates, moon phases, and Ramadan calendar.
+- **Quran Reader**: Surah and Juz navigation, audio playback, bookmarks, search, and reading progress.
+- **Hadith Collection**: Book and hadith list, search, bookmarks, detail view with audio.
+- **Zakat Calculator**: Multi-currency, gold/silver rates, asset/debt input, eligibility check, and result dialog.
+- **Qibla Finder**: Compass-based direction to Qibla, location permissions, and user feedback.
+- **Task & Checklist**: Daily/recurring tasks, prayer task toggles, calendar view, reminders, and notifications.
+- **Video & Recipe Content**: YouTube video player, categories, featured/popular, recipe details, and reporting.
+- **Mosque Finder**: Google Maps integration, search radius, markers, and location permissions.
+- **Tasbeeh**: Digital counter with vibration/sound feedback, persistent state.
+- **Wallpapers**: Download and set Islamic wallpapers, download count, and permissions.
+- **User Onboarding**: Multi-page onboarding, language and madhab selection, notification opt-in.
+- **Settings**: Language, madhab, calculation method, dark mode, notification toggle, and about dialog.
+- **Reports**: Prayer completion analytics, charts, and progress tracking.
+
+---
+
+## 2. Main Screens (lib/screens/)
+- `SplashScreen` – App initialization, onboarding check
+- `OnboardingScreen` – First-time user setup
+- `HomeScreen` – Dashboard, navigation, feature grid
+- `PrayerTimePage` – Prayer times, alarms, location update
+- `QuranScreen`, `SurahDetailScreen`, `JuzDetailScreen` – Quran reading, audio, bookmarks
+- `HadithPage`, `HadithListPage`, `HadithDetailPage` – Hadith books, search, detail, audio
+- `ZakatCalculatorScreen` – Zakat calculation and summary
+- `QiblaFinderScreen` – Qibla direction, compass
+- `TaskSheduleScreen`, `CreateTaskScreen` – Task/calendar management
+- `DiscoverScreen`, `VideoPlayerScreen`, `RecipeDetailScreen` – Content hub, video, recipes
+- `MosqueFinderScreen` – Mosque map and search
+- `TasbeehPage` – Digital tasbeeh
+- `WallpaperPreviewScreen` – Wallpaper download/set
+- `SettingsScreen` – Preferences and about
+- `ReportScreen` – Analytics and progress
+- `HijriCalendarPage`, `RamadanCalendarPage` – Islamic calendar views
+
+---
+
+## 3. Architecture & State Management
+- **State Management**: Uses [Riverpod](https://riverpod.dev/) for providers and state.
+- **Routing**: Centralized in `lib/routes/routes.dart`.
+- **Services**: `lib/services/` for business logic (e.g., location, notification, database, API).
+- **Repositories**: `lib/repositories/` for data access and abstraction.
+- **Models**: `lib/models/` for data structures (prayer times, hadith, quran, tasks, etc.).
+- **Providers**: `lib/providers/` for state and logic (prayer times, tasks, language, etc.).
+- **Widgets**: `lib/widgets/` for reusable UI components (drawers, cards, lists, dialogs, etc.).
+- **Theme**: Custom theme in `lib/theme/app_theme.dart` (primary: #16BC88, modern, clean, Islamic aesthetic).
+- **Translations**: `lib/utils/app_translations.dart` for multi-language support.
+
+---
+
+## 4. UI/UX Patterns & Notes
+- **Modern, Clean UI**: Rounded corners, gradients, cards, and Islamic color palette.
+- **Responsive Layouts**: Use of `ScreenUtil` for scaling; adapt for desktop with flexible/responsive widgets.
+- **Navigation**: Drawer, bottom navigation, tab bars, and side navigation for desktop.
+- **Dialogs & Feedback**: Custom dialogs for permissions, errors, and confirmations.
+- **Accessibility**: Large touch targets, readable fonts, and color contrast.
+- **Assets**: Rich use of SVGs, PNGs, and custom fonts (Amiri, etc.).
+- **Animations**: Subtle transitions, shimmer loading, and animated backgrounds.
+- **Desktop Adaptation**: For desktop, use side navigation, resizable windows, keyboard shortcuts, and mouse/keyboard-friendly controls.
+
+---
+
+## 5. Migration Tips for Desktop
+- Replace mobile navigation (bottom nav, drawers) with sidebars or top nav.
+- Use desktop-friendly widgets (DataTable, ListView, Dialog, etc.).
+- Ensure all features are accessible with mouse and keyboard.
+- Make layouts responsive to window resizing.
+- Use platform-specific plugins for notifications, file access, etc.
+- Maintain the Islamic branding and beautiful UI.
+
+---
+
+## 6. References
+- **Main entry**: `lib/main.dart`
+- **Theme**: `lib/theme/app_theme.dart`
+- **Routing**: `lib/routes/routes.dart`
+- **Providers**: `lib/providers/`
+- **Services**: `lib/services/`
+- **Repositories**: `lib/repositories/`
+- **Models**: `lib/models/`
+- **Widgets**: `lib/widgets/`
+- **Translations**: `lib/utils/app_translations.dart`
+- **Assets**: `/assets/`
+
+---
+
+This file should be used as a reference for re-architecting and redesigning the Ramadan Tracker app for a modern, beautiful, and fully-featured desktop experience using Flutter. 

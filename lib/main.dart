@@ -9,6 +9,14 @@ import 'dart:io' show Platform, exit;
 // as getWebviewPaths() provides it directly. However, it doesn't hurt to keep it if used elsewhere.
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'screens/prayer_times_screen.dart';
+import 'screens/hijri_calendar_screen.dart';
+import 'screens/quran_screen.dart';
+import 'screens/hadith_screen.dart';
+import 'screens/zakat_calculator_screen.dart';
+import 'screens/task_checklist_screen.dart';
+import 'screens/videos_recipes_screen.dart';
+import 'screens/qibla_finder_screen.dart';
 
 
 // This part is crucial for 'desktop_webview_window' to initialize correctly.
@@ -25,494 +33,332 @@ Future<void> main(List<String> args) async {
   }
 
   // Run your main Flutter application.
-  runApp(const MyApp());
+  runApp(const RamadanTrackerDesktopApp());
 }
 
 // The root widget of your Flutter application.
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class RamadanTrackerDesktopApp extends StatelessWidget {
+  const RamadanTrackerDesktopApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Shaharia.me Desktop App',
+      title: 'Ramadan Tracker Desktop',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          elevation: 1,
-          centerTitle: true,
+        primaryColor: const Color(0xFF16BC88),
+        colorScheme: ColorScheme.light(
+          primary: const Color(0xFF16BC88),
+          secondary: const Color(0xFF14A87A),
+          background: const Color(0xFFFAFAFA),
+          surface: Colors.white,
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onBackground: Color(0xFF1F2937),
+          onSurface: Color(0xFF1F2937),
         ),
+        scaffoldBackgroundColor: const Color(0xFFFAFAFA),
+        cardColor: Colors.white,
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(
+            fontFamily: 'Amiri',
+            fontWeight: FontWeight.bold,
+            fontSize: 32,
+            color: Color(0xFF1F2937),
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 18,
+            color: Color(0xFF1F2937),
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+        fontFamily: 'Amiri', // Fallback to default if not available
+        useMaterial3: true,
       ),
-      home: const DesktopWebApp(),
+      home: const DesktopShell(),
     );
   }
 }
 
-// The main desktop web app widget
-class DesktopWebApp extends StatefulWidget {
-  const DesktopWebApp({super.key});
+class DesktopShell extends StatefulWidget {
+  const DesktopShell({super.key});
 
   @override
-  State<DesktopWebApp> createState() => _DesktopWebAppState();
+  State<DesktopShell> createState() => _DesktopShellState();
 }
 
-class _DesktopWebAppState extends State<DesktopWebApp> {
-  Webview? _webview;
-  bool _isLoading = true;
-  bool _hasError = false;
-  String _errorMessage = '';
-  String _currentUrl = 'https://www.shaharia.me';
-  final TextEditingController _urlController = TextEditingController();
-  bool _webviewReady = false;
+class _DesktopShellState extends State<DesktopShell> {
+  int _selectedIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _urlController.text = _currentUrl;
-    _initializeWebview();
-  }
+  static const List<String> _navItems = [
+    'Dashboard',
+    'Prayer Times',
+    'Hijri Calendar',
+    'Quran',
+    'Hadith',
+    'Zakat',
+    'Tasks',
+    'Videos & Recipes',
+    'Qibla Finder',
+    'Settings',
+  ];
 
-  Future<void> _initializeWebview() async {
-    // Check if running on web platform
-    if (kIsWeb) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = 'This app is designed for desktop platforms only. Please run on Windows, macOS, or Linux.';
-        _isLoading = false;
-      });
-      return;
-    }
-
-    try {
-      // Check for WebView availability on Windows
-      if (Platform.isWindows && !await WebviewWindow.isWebviewAvailable()) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = 'WebView2 Runtime is not installed. Please install it to use this app.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Get the user data directory for the webview
-      final userDataDir = await getApplicationSupportDirectory();
-      
-      // Create a new WebviewWindow instance
-      _webview = await WebviewWindow.create(
-        configuration: CreateConfiguration(
-          windowHeight: 900,
-          windowWidth: 1400,
-          title: "Shaharia.me - Desktop Browser",
-          userDataFolderWindows: userDataDir.path,
-        ),
-      );
-
-      // Add listener for webview close event
-      _webview!.onClose.then((_) {
-        debugPrint("WebView closed!");
-        // Don't exit the app, just mark webview as closed
-        setState(() {
-          _webviewReady = false;
-        });
-      });
-
-      // Load the website
-      _webview!.launch(_currentUrl);
-      
-      setState(() {
-        _isLoading = false;
-        _webviewReady = true;
-      });
-
-    } catch (e) {
-      debugPrint("Error launching webview: $e");
-      setState(() {
-        _hasError = true;
-        _errorMessage = 'Failed to load the website: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _navigateToUrl() {
-    final url = _urlController.text.trim();
-    if (url.isNotEmpty && _webview != null) {
-      setState(() {
-        _currentUrl = url.startsWith('http') ? url : 'https://$url';
-        _urlController.text = _currentUrl;
-      });
-      _webview!.launch(_currentUrl);
-    }
-  }
-
-  void _openNewWebview() {
-    _initializeWebview();
-  }
-
-  void _refresh() {
-    if (_webview != null) {
-      _webview!.launch(_currentUrl);
+  Widget _buildPage(int index) {
+    switch (index) {
+      case 0:
+        return const DashboardScreen();
+      case 1:
+        return const PrayerTimesScreen();
+      case 2:
+        return const HijriCalendarScreen();
+      case 3:
+        return const QuranScreen();
+      case 4:
+        return const HadithScreen();
+      case 5:
+        return const ZakatCalculatorScreen();
+      case 6:
+        return const TaskChecklistScreen();
+      case 7:
+        return const QiblaFinderScreen();
+      default:
+        return Center(
+          child: Text(
+            _navItems[index],
+            style: Theme.of(context).textTheme.headlineLarge,
+          ),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.grey[50],
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Loading Shaharia.me...',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Preparing your desktop experience',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_hasError) {
-      return Scaffold(
-        backgroundColor: Colors.grey[50],
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(40.0),
-            child: Container(
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Error',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red[700],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _errorMessage,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _isLoading = true;
-                        _hasError = false;
-                        _errorMessage = '';
-                      });
-                      _initializeWebview();
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Main desktop app interface
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Shaharia.me Desktop App',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          // Status indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: _webviewReady ? Colors.green[100] : Colors.orange[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _webviewReady ? Icons.check_circle : Icons.pending,
-                  size: 16,
-                  color: _webviewReady ? Colors.green[700] : Colors.orange[700],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _webviewReady ? 'Connected' : 'Disconnected',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _webviewReady ? Colors.green[700] : Colors.orange[700],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refresh,
-            tooltip: 'Refresh',
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: Column(
+      body: Row(
         children: [
-          // URL Bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Colors.grey[300]!),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.link, color: Colors.grey),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _urlController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter URL...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    onSubmitted: (_) => _navigateToUrl(),
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (int index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            labelType: NavigationRailLabelType.all,
+            backgroundColor: Colors.white,
+            leading: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24.0),
+              child: Column(
+                children: [
+                  // Placeholder for app logo/icon
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: const Color(0xFF16BC88),
+                    child: Icon(Icons.star, color: Colors.white, size: 32),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _navigateToUrl,
-                  child: const Text('Go'),
-                ),
-              ],
-            ),
-          ),
-          // Main content area
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
+                  const SizedBox(height: 12),
                 ],
               ),
-              child: _webviewReady
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.web,
-                            size: 48,
-                            color: Colors.green,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Website is loaded in a separate window',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Look for the Shaharia.me window',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.web,
-                            size: 48,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'No active webview',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Click the button below to open a new window',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            onPressed: _openNewWebview,
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Open Website Window'),
-                          ),
-                        ],
-                      ),
-                    ),
             ),
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.dashboard),
+                label: Text('Dashboard'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.access_time),
+                label: Text('Prayer Times'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.calendar_month),
+                label: Text('Hijri Calendar'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.menu_book),
+                label: Text('Quran'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.library_books),
+                label: Text('Hadith'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.calculate),
+                label: Text('Zakat'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.check_circle),
+                label: Text('Tasks'),
+              ),
+              // NavigationRailDestination(
+              //   icon: Icon(Icons.ondemand_video),
+              //   label: Text('Videos & Recipes'),
+              // ),
+              NavigationRailDestination(
+                icon: Icon(Icons.explore),
+                label: Text('Qibla Finder'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.settings),
+                label: Text('Settings'),
+              ),
+            ],
+            selectedIconTheme: const IconThemeData(color: Color(0xFF16BC88), size: 28),
+            unselectedIconTheme: const IconThemeData(color: Color(0xFF6B7280), size: 24),
+            selectedLabelTextStyle: const TextStyle(
+              color: Color(0xFF16BC88),
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelTextStyle: const TextStyle(
+              color: Color(0xFF6B7280),
+            ),
+          ),
+          const VerticalDivider(width: 1, thickness: 1),
+          Expanded(
+            child: _buildPage(_selectedIndex),
           ),
         ],
       ),
     );
   }
-
-  @override
-  void dispose() {
-    _urlController.dispose();
-    super.dispose();
-  }
 }
 
-// Custom WebviewWidget for embedding webview content
-class WebviewWidget extends StatelessWidget {
-  final Webview? webview;
-
-  const WebviewWidget({super.key, this.webview});
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (webview == null) {
-      return Container(
-        color: Colors.white,
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Ramadan Mubarak!', style: theme.textTheme.headlineLarge),
+          const SizedBox(height: 8),
+          Text(
+            'Welcome to Ramadan Tracker Desktop. Your spiritual companion for Ramadan.',
+            style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 32),
+          // Example cards for main features
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
             children: [
-              Icon(
-                Icons.web,
-                size: 48,
-                color: Colors.grey,
+              _FeatureCard(
+                title: 'Prayer Times',
+                icon: Icons.access_time,
+                color: const Color(0xFF16BC88),
+                onTap: () {},
               ),
-              SizedBox(height: 16),
-              Text(
-                'Website content will be embedded here',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+              _FeatureCard(
+                title: 'Hijri Calendar',
+                icon: Icons.calendar_month,
+                color: const Color(0xFF14A87A),
+                onTap: () {},
               ),
-              SizedBox(height: 8),
-              Text(
-                'Loading Shaharia.me...',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+              _FeatureCard(
+                title: 'Quran Reader',
+                icon: Icons.menu_book,
+                color: const Color(0xFF4A90E2),
+                onTap: () {},
+              ),
+              _FeatureCard(
+                title: 'Hadith Collection',
+                icon: Icons.library_books,
+                color: const Color(0xFFFFBE0B),
+                onTap: () {},
+              ),
+              _FeatureCard(
+                title: 'Zakat Calculator',
+                icon: Icons.calculate,
+                color: const Color(0xFF16BC88),
+                onTap: () {},
+              ),
+              _FeatureCard(
+                title: 'Qibla Finder',
+                icon: Icons.explore,
+                color: const Color(0xFF14A87A),
+                onTap: () {},
+              ),
+              _FeatureCard(
+                title: 'Tasks & Checklist',
+                icon: Icons.check_circle,
+                color: const Color(0xFF4A90E2),
+                onTap: () {},
+              ),
+              _FeatureCard(
+                title: 'Videos & Recipes',
+                icon: Icons.ondemand_video,
+                color: const Color(0xFFFFBE0B),
+                onTap: () {},
+              ),
+              _FeatureCard(
+                title: 'Settings',
+                icon: Icons.settings,
+                color: const Color(0xFF16BC88),
+                onTap: () {},
               ),
             ],
           ),
-        ),
-      );
-    }
+        ],
+      ),
+    );
+  }
+}
 
-    // For now, we'll show a placeholder since embedding webview directly
-    // in Flutter widgets requires additional setup
-    return Container(
-      color: Colors.white,
-      child: const Center(
+class _FeatureCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _FeatureCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 220,
+        height: 140,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.85), color.withOpacity(0.65)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.web,
-              size: 48,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
+            Icon(icon, size: 48, color: Colors.white),
+            const SizedBox(height: 16),
             Text(
-              'Website content is embedded in this window',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+              title,
+              style: const TextStyle(
+                fontFamily: 'Amiri',
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.white,
               ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Shaharia.me is loaded in the background',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
